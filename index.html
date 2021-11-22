@@ -2,14 +2,469 @@
 <html>
     <head>
         <title>French Conjugations</title>
+        <script
+  src="https://code.jquery.com/jquery-3.6.0.js"
+  integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+  crossorigin="anonymous"></script>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     </head>
-    <h1 style="text-align: center;">French Conjugations!</h1><br>
+    <h1 style="text-align: center; padding-top: 10px">🇫🇷 French Conjugations! 🇫🇷</h1><br>
     <div style="text-align: center;">
-        <button class="btn btn-primary" style="display: inline-block">Conjugation Practice</button>
-        <button class="btn btn-outline-primary" style="display: inline-block">Verb Conjugation</button>
-        <button class="btn btn-outline-primary" style="display: inline-block">About!</button>
+        <button id="conjPractice" class="btn btn-primary" style="display: inline-block" onclick="startPractice()">Conjugation Practice</button>
+        <button id="conjList" class="btn btn-outline-primary" style="display: inline-block" onclick="getConjDiv()">Verb Conjugation Lookup</button>
+        <button id="aboutBtn" class="btn btn-outline-primary" style="display: inline-block" onclick="about()">About!</button>
     </div>
+
+    <div class="webShown" id="conj-practice" style="display: block; text-align: center;">
+        <div>
+            <br><h5 style="text-align: center;">Which verb would you like to conjugate?</h5>
+            <input id="conjugateText" type="text" placeholder="Enter a verb...">
+            <button onclick="getConj()" id="conjugateButton" class="btn btn-success" style="display: inline-block;">Conjugate!</button><div style="padding-bottom: 10px;"></div>
+            <h5 style="text-align: center;">Which tense would you like to practice? (If none chosen, indicatif présent assumed)</h5>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton1" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Indicatif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-passeSimple')">Passé simple</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-imparfait')">Imparfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-passeCompose')">Passé composé</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-futurSimple')">Futur simple</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-passeAnterieur')">Passé Anterieur</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-plusQueParfait')">Plus-que-parfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('indicatif-futurAnterieur')">Futur anterieur</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton2" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Subjonctif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                    <li><button class="dropdown-item" onclick="changeTense('subjonctif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('subjonctif-passe')">Passé</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('subjonctif-imparfait')">Imparfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('subjonctif-plusQueParfait')">Plus-que-parfait</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton3" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Conditionnel
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+                    <li><button class="dropdown-item" onclick="changeTense('conditionnel-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('conditionnel-passe1reForme')">Passé (1st form)</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('conditionnel-passe2eForme')">Passé (2nd form)</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton4" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Impératif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4">
+                    <li><button class="dropdown-item" onclick="changeTense('imperatif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTense('imperatif-passe')">Passé</button></li>
+                </ul>
+            </div>
+            <p style="display: none; color: red;" id="notAVerb"><strong>Not a verb!</strong></p>
+        </div>
+        <div id="conjArea" style="display: none">
+            <br><h4 id="verbTitle" style="color: red"></h4>
+            <p>Just press enter after each one to move to the next! If you're wrong the text in the box will turn red. If you are correct, it will turn green.</p>
+            <div style="display: inline-block; padding-right: 15px">
+                <label for="je" id="jeLabel"><strong>Je </strong></label>
+                <input id="je" type="text"><div style="padding-bottom: 5px"></div>
+                <label for="tu"><strong>Tu </strong></label>
+                <input id="tu" type="text"><div style="padding-bottom: 5px"></div>
+                <label for="ilelleon"><strong>Il/Elle/On </strong></label>
+                <input id="ilelleon" type="text">
+            </div>
+            <div style="display: inline-block;">
+                <label for="nous"><strong>Nous </strong></label>
+                <input id="nous" type="text"><div style="padding-bottom: 5px"></div>
+                <label for="vous"><strong>Vous </strong></label>
+                <input id="vous" type="text"><div style="padding-bottom: 5px"></div>
+                <label for="ilselles"><strong>Ils/Elles </strong></label>
+                <input id="ilselles" type="text">
+            </div>
+        </div>
+        <h2 id="congrats" style="display:none;">Congratulations! You got it all correct 🎉🎉🎉</h2>
+    </div>
+    <div id="conj-list" style="text-align: center; display: none;">
+        <div>
+            <br><h5 style="text-align: center;">Which verb would you like to lookup?</h5>
+            <input id="conjugateTextLookup" type="text" placeholder="Enter a verb...">
+            <button onclick="getConjLookup()" id="conjugateButtonLookup" class="btn btn-success" style="display: inline-block;">Lookup!</button><div style="padding-bottom: 10px;"></div>
+            <h5 style="text-align: center;">Which tense would you like to lookup? (If none chosen, indicatif présent assumed)</h5>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton1-Lookup" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Indicatif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1-Lookup">
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-passeSimple')">Passé simple</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-imparfait')">Imparfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-passeCompose')">Passé composé</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-futurSimple')">Futur simple</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-passeAnterieur')">Passé Anterieur</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-plusQueParfait')">Plus-que-parfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('indicatif-futurAnterieur')">Futur anterieur</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton2-Lookup" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Subjonctif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2-Lookup">
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('subjonctif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('subjonctif-passe')">Passé</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('subjonctif-imparfait')">Imparfait</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('subjonctif-plusQueParfait')">Plus-que-parfait</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton3-Lookup" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Conditionnel
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton3-Lookup">
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('conditionnel-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('conditionnel-passe1reForme')">Passé (1st form)</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('conditionnel-passe2eForme')">Passé (2nd form)</button></li>
+                </ul>
+            </div>
+            <div class="dropdown" style="display: inline-block;">
+                <button id="dropdownMenuButton4-Lookup" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Impératif
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton4-Lookup">
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('imperatif-present')">Présent</button></li>
+                    <li><button class="dropdown-item" onclick="changeTenseLookup('imperatif-passe')">Passé</button></li>
+                </ul>
+            </div>
+            <p style="display: none; color: red;" id="notAVerbLookup"><strong>Not a verb!</strong></p>
+        </div>
+        <div id="lookupArea" style="display: none">
+            <br><h4 id="verbTitleLookup" style="color: red"></h4>
+            <div style="display: inline-block; padding-right: 15px">
+                <h5 id="jeLookup"></h5>
+                <h5 id="tuLookup"></h5>
+                <h5 id="ilelleonLookup"></h5>
+            </div>
+            <div style="display: inline-block;">
+                <h5 id="nousLookup"></h5>
+                <h5 id="vousLookup"></h5>
+                <h5 id="ilsellesLookup"></h5>
+            </div>
+        </div>
+    </div>
+    <div id="about"></div>
+
+    <script>
+        var webStarted = true;
+        var practicing=false;
+        var tense = "indicatif-present";
+        var inputs = ["je", "tu", "ilelleon", "nous", "vous", "ilselles"];
+        var imperatifInputs = ["tu", "nous", "vous"];
+        var apiResponse = {};
+        var apiResponseLookup = {};
+        var currentSplit = [];
+        var currentFocus = "";
+        var currentChecker;
+        var complete = false;
+        var lookupTense = "indicatif-present";
+
+        var verbDic = {"indicatif-present": {"je": "indicatifPresentI", "tu": "indicatifPresentYou", "ilelleon": "indicatifPresentHeSheIt", "nous": "indicatifPresentWe", "vous": "indicatifPresentYouAll", "ilselles": "indicatifPresentThey"}, 
+        "indicatif-passeSimple": {"je": "indicatifPasseSimpleI", "tu": "indicatifPasseSimpleYou", "ilelleon": "indicatifPasseSimpleHeSheIt", "nous": "indicatifPasseSimpleWe", "vous": "indicatifPasseSimpleYouAll", "ilselles": "indicatifPasseSimpleThey"}, 
+        "indicatif-imparfait": {"je": "indicatifImparfaitI", "tu": "indicatifImparfaitYou", "ilelleon": "indicatifImparfaitHeSheIt", "nous": "indicatifImparfaitWe", "vous": "indicatifImparfaitYouAll", "ilselles": "indicatifImparfaitThey"}, 
+        "indicatif-passeCompose": {"je": "indicatifPasseComposeI", "tu": "indicatifPasseComposeYou", "ilelleon": "indicatifPasseComposeHeSheIt", "nous": "indicatifPasseComposeWe", "vous": "indicatifPasseComposeYouAll", "ilselles": "indicatifPasseComposeThey"}, 
+        "indicatif-futurSimple": {"je": "indicatifFuturSimpleI", "tu": "indicatifFuturSimpleYou", "ilelleon": "indicatifFuturSimpleHeSheIt", "nous": "indicatifFuturSimpleWe", "vous": "indicatifFuturSimpleYouAll", "ilselles": "indicatifFuturSimpleThey"}, 
+        "indicatif-passeAnterieur": {"je": "indicatifPasseAnterieurI", "tu": "indicatifPasseAnterieurYou", "ilelleon": "indicatifPasseAnterieurHeSheIt", "nous": "indicatifPasseAnterieurWe", "vous": "indicatifPasseAnterieurYouAll", "ilselles": "indicatifPasseAnterieurThey"}, 
+        "indicatif-plusQueParfait": {"je": "indicatifPlusQueParfaitI", "tu": "indicatifPlusQueParfaitYou", "ilelleon": "indicatifPlusQueParfaitHeSheIt", "nous": "indicatifPlusQueParfaitWe", "vous": "indicatifPlusQueParfaitYouAll", "ilselles": "indicatifPlusQueParfaitThey"},
+        "indicatif-futurAnterieur": {"je": "indicatifFuturAnterieurI", "tu": "indicatifFuturAnterieurYou", "ilelleon": "indicatifFuturAnterieurHeSheIt", "nous": "indicatifFuturAnterieurWe", "vous": "indicatifFuturAnterieurYouAll", "ilselles": "indicatifFuturAnterieurThey"},
+        "subjonctif-present": {"je": "subjonctifPresentI", "tu": "subjonctifPresentYou", "ilelleon": "subjonctifPresentHeSheIt", "nous": "subjonctifPresentWe", "vous": "subjonctifPresentYouAll", "ilselles": "subjonctifPresentThey"},
+        "subjonctif-passe": {"je": "subjonctifPasseI", "tu": "subjonctifPasseYou", "ilelleon": "subjonctifPasseHeSheIt", "nous": "subjonctifPasseWe", "vous": "subjonctifPasseYouAll", "ilselles": "subjonctifPasseThey"},
+        "subjonctif-imparfait": {"je": "subjonctifImparfaitI", "tu": "subjonctifImparfaitYou", "ilelleon": "subjonctifImparfaitHeSheIt", "nous": "subjonctifImparfaitWe", "vous": "subjonctifImparfaitYouAll", "ilselles": "subjonctifImparfaitThey"},
+        "subjonctif-plusQueParfait": {"je": "subjonctifPlusQueParfaitI", "tu": "subjonctifPlusQueParfaitYou", "ilelleon": "subjonctifPlusQueParfaitHeSheIt", "nous": "subjonctifPlusQueParfaitWe", "vous": "subjonctifPlusQueParfaitYouAll", "ilselles": "subjonctifPlusQueParfaitThey"},
+        "conditionnel-present": {"je": "conditionnelPresentI", "tu": "conditionnelPresentYou", "ilelleon": "conditionnelPresentHeSheIt", "nous": "conditionnelPresentWe", "vous": "conditionnelPresentYouAll", "ilselles": "conditionnelPresentThey"},
+        "conditionnel-passe1reForme": {"je": "conditionnelPasse1reFormeI", "tu": "conditionnelPasse1reFormeYou", "ilelleon": "conditionnelPasse1reFormeHeSheIt", "nous": "conditionnelPasse1reFormeWe", "vous": "conditionnelPasse1reFormeYouAll", "ilselles": "conditionnelPasse1reFormeThey"},
+        "conditionnel-passe2eForme": {"je": "conditionnelPasse2eFormeI", "tu": "conditionnelPasse2eFormeYou", "ilelleon": "conditionnelPasse2eFormeHeSheIt", "nous": "conditionnelPasse2eFormeWe", "vous": "conditionnelPasse2eFormeYouAll", "ilselles": "conditionnelPasse2eFormeThey"},
+        "imperatif-present": {"je": "no", "tu": "imperatifPresentFirst", "ilelleon": "no", "nous": "imperatifPresentSecond", "vous": "imperatifPresentThird", "ilselles": "no"},
+        "imperatif-passe": {"je": "no", "tu": "imperatifPasseFirst", "ilelleon": "no", "nous": "imperatifPasseSecond", "vous": "imperatifPasseThird", "ilselles": "no"}}
+
+        var lookupChanger;
+
+        function changeTenseLookup(inputTense) {
+            lookupTense = inputTense;
+            currentSplit = lookupTense.split('-');
+            if (document.getElementById("lookupArea").style.display=="block" && apiResponseLookup!={}) {
+                for (var i=0; i<6; i++) {
+                    if (apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]]=="-") {
+                        document.getElementById(inputs[i]+"Lookup").innerHTML=inputs[i][0].toUpperCase()+inputs[i].slice(1)+": <span style='color: purple'>-</span>";
+                    } else {
+                        if (apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].indexOf("'")!=-1 && inputs[i]=="je") {
+                            document.getElementById("jeLookup").innerHTML="J'<span style='color: purple'><strong>"+(apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].split("'"))[1]+"</strong></span>";
+                        } else {
+
+                            if (inputs[i]=="ilelleon") {
+                                splitter = "il/elle/on";
+                            } else if (inputs[i]=="ilselles") {
+                                splitter= "ils/elles";
+                            } else {
+                                splitter = inputs[i];
+                            }
+
+                            document.getElementById(inputs[i]+"Lookup").innerHTML=inputs[i][0].toUpperCase()+inputs[i].slice(1)+" <span style='color: purple'><strong>"+(apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].split(splitter))[1].slice(1)+"</strong></span>";
+                        }
+                    }
+                }
+            }
+        }
+
+        function changeTense(inputTense) {
+            tense = inputTense;
+            document.getElementById("congrats").style.display="none";
+            currentSplit = tense.split('-');
+
+            if (document.getElementById("conjArea").style.display=="block" && apiResponse!=={}) {
+                for (var i=0; i<6; i++) {
+                   document.getElementById(inputs[i]).value="";
+                   document.getElementById(inputs[i]).style.color="black";
+                   document.getElementById(inputs[i]).disabled=false;
+                }
+                if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense]["je"]].indexOf("'")!=-1) {
+                    document.getElementById("jeLabel").innerHTML="<strong>J'</strong>";
+                } else {
+                    document.getElementById("jeLabel").innerHTML="<strong>Je </strong>";
+                }
+
+                if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][inputs[i]]]=="-") {
+                    document.getElementById(inputs[i]).disabled=true;
+                    document.getElementById(inputs[i]).style.color="green";
+                }
+            }
+        }
+
+        var splitter;
+        var checker;
+
+        document.addEventListener("keyup", function(event) {
+            if (event.code === 'Enter' && practicing) {
+                for (var x = 0; x<6; x++) {
+                    if ($("#"+inputs[x]).is(":focus")) {
+                        currentFocus = inputs[x];
+                        break;
+                    }
+                }
+                currentSplit = tense.split('-');
+
+                if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]].indexOf("'")!=-1) {
+                    splitter = "'";
+                } else {
+                    if (currentFocus == "ilelleon") {
+                        splitter = "il/elle/on";
+                    } else if (currentFocus=="ilselles") {
+                        splitter = "ils/elles";
+                    } else {
+                        splitter = currentFocus;
+                    }
+                }
+                
+                if (splitter == "'") {
+                    checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]).split(splitter))[1];
+                } else {
+                    checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]).split(splitter))[1].slice(1);
+                }
+
+
+                if (document.getElementById(currentFocus).value!=checker) {
+                    document.getElementById(currentFocus).style.color = "red";
+                } else {
+                    document.getElementById(currentFocus).style.color = "green";
+                }
+
+                if (currentFocus == "je") {
+                    document.getElementById("tu").focus();
+                } else if (currentFocus == "tu") {
+                    document.getElementById("ilelleon").focus();
+                } else if (currentFocus == "ilelleon") {
+                    document.getElementById("nous").focus();
+                } else if (currentFocus == "nous") {
+                    document.getElementById("vous").focus();
+                } else if (currentFocus == "vous") {
+                    document.getElementById("ilselles").focus();
+                } else if (currentFocus == "ilselles") {
+                    document.getElementById("je").focus();
+                }
+                
+                complete = false;
+
+                for (var h=0; h<6; h++) {
+                    if (document.getElementById([inputs[h]]).style.color!="green") {
+                        complete = true;
+                        break;
+                    }
+                }
+                if (complete!=true) {
+                    document.getElementById("congrats").style.display="block";
+                }
+            }
+        })
+
+        function getConjLookup() {
+
+            document.getElementById("notAVerbLookup").style.display="none";
+            document.getElementById("lookupArea").style.display="none";
+
+            const lookupSettings = {
+                "async": true,
+                "crossDomain": true,
+                "url": "https://french-conjugaison.p.rapidapi.com/conjugate/"+document.getElementById("conjugateTextLookup").value,
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-host": "french-conjugaison.p.rapidapi.com",
+		            "x-rapidapi-key": "ff84d5ef34msh461ef5b2b16dccdp196060jsn7c69274d510a"
+                }
+            }
+
+            var replacer;
+
+            $.ajax(lookupSettings).done(function (response) {
+                if (response["code"]==1) {
+                    apiResponseLookup = response;
+                    currentSplit = lookupTense.split('-');
+                    for (var i=0; i<6; i++) {
+                        if (apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]]=="-") {
+                            document.getElementById(inputs[i]+"Lookup").innerHTML=inputs[i][0].toUpperCase()+inputs[i].slice(1)+": <span style='color: purple'>-</span>";
+                        } else {
+                            if (apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].indexOf("'")!=-1 && inputs[i]=="je") {
+                                document.getElementById("jeLookup").innerHTML="J'<span style='color: purple'><strong>"+(apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].split("'"))[1]+"</strong></span>";
+                            } else {
+                                if (inputs[i]=="ilelleon") {
+                                    splitter = "il/elle/on";
+                                    replacer = "Il/Elle/On"
+                                } else if (inputs[i]=="ilselles") {
+                                    splitter= "ils/elles";
+                                    replacer = "Ils/Elles";
+                                } else {
+                                    splitter = inputs[i];
+                                    replacer=inputs[i];
+                                }
+                                document.getElementById(inputs[i]+"Lookup").innerHTML=replacer[0].toUpperCase()+replacer.slice(1)+" <span style='color: purple'><strong>"+(apiResponseLookup["data"][currentSplit[0]][currentSplit[1]][verbDic[lookupTense][inputs[i]]].split(splitter))[1].slice(1)+"</strong></span>";;
+                            }
+                        }
+                    }
+                    document.getElementById("lookupArea").style.display="block";
+                } else {
+                    document.getElementById("notAVerbLookup").style.display="block";
+                }
+            });
+        }
+
+        function getConj() {
+
+            document.getElementById("congrats").style.display="none";
+
+            document.getElementById("notAVerb").style.display="none";
+            document.getElementById("conjArea").style.display="none";
+
+            for (var j=0; j<6; j++) {
+                document.getElementById(inputs[j]).value="";
+                document.getElementById(inputs[j]).style.color="black";
+                document.getElementById(inputs[j]).disabled = false;
+            }
+
+            const settings = {
+	            "async": true,
+	            "crossDomain": true,
+	            "url": "https://french-conjugaison.p.rapidapi.com/conjugate/"+document.getElementById("conjugateText").value,
+	            "method": "GET",
+	            "headers": {
+		            "x-rapidapi-host": "french-conjugaison.p.rapidapi.com",
+		            "x-rapidapi-key": "ff84d5ef34msh461ef5b2b16dccdp196060jsn7c69274d510a"
+	            }
+            };
+
+            $.ajax(settings).done(function (response) {
+	            if (response["code"]==1) {
+                    document.getElementById("verbTitle").innerHTML = (document.getElementById("conjugateText").value).charAt(0).toUpperCase()+(document.getElementById("conjugateText").value).slice(1);
+                    document.getElementById("conjArea").style.display="block";
+
+                    apiResponse = response;
+                    practicing = true;
+
+                    currentSplit = tense.split('-');
+
+                    if (response["data"][currentSplit[0]][currentSplit[1]][verbDic[tense]["je"]].indexOf("'")!=-1) {
+                        document.getElementById("jeLabel").innerHTML = "<strong>J'</strong>";
+                    } else {
+                        document.getElementById("jeLabel").innerHTML = "<strong>Je</strong> ";
+                    }
+
+                    for (var u=0; u<6; u++) {
+                        if (response["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][inputs[u]]]=="-") {
+                            document.getElementById(inputs[u]).disabled = true;
+                            document.getElementById(inputs[u]).style.color="green";
+                        }
+                    }
+                } else {
+                    document.getElementById("notAVerb").style.display="block";
+                }
+            });
+        }
+
+        function startPractice() {
+            if (webStarted != true) {
+                var oldElm = document.getElementsByClassName("btn-primary")[0]
+                oldElm.classList.add("btn-outline-primary");
+                oldElm.classList.remove("btn-primary");
+                document.getElementById("conjPractice").classList.remove("btn-outline-primary");
+                document.getElementById("conjPractice").classList.add("btn-primary");
+
+                document.getElementsByClassName("webShown")[0].style.display = "none";
+                document.getElementsByClassName("webShown")[0].classList.remove("webShown");
+
+                document.getElementById("conj-practice").style.display="block";
+                document.getElementById("conj-practice").classList.add("webShown");
+            }
+        }
+        function getConjDiv() {
+            practicing = false;
+
+            var oldElm = document.getElementsByClassName("btn-primary")[0]
+            oldElm.classList.add("btn-outline-primary");
+            oldElm.classList.remove("btn-primary");
+            document.getElementById("conjList").classList.remove("btn-outline-primary");
+            document.getElementById("conjList").classList.add("btn-primary");
+            if (webStarted == true) {
+                webStarted = false;
+            }
+
+            document.getElementsByClassName("webShown")[0].style.display = "none";
+            document.getElementsByClassName("webShown")[0].classList.remove("webShown");
+
+            document.getElementById("conj-list").style.display = "block";
+            document.getElementById("conj-list").classList.add("webShown");
+        }
+        function about() {
+            practicing = false;
+
+            var oldElm = document.getElementsByClassName("btn-primary")[0]
+            oldElm.classList.add("btn-outline-primary");
+            oldElm.classList.remove("btn-primary");
+            document.getElementById("aboutBtn").classList.remove("btn-outline-primary");
+            document.getElementById("aboutBtn").classList.add("btn-primary");
+            if (webStarted == true) {
+                webStarted = false;
+            }
+
+            document.getElementsByClassName("webShown")[0].style.display = "none";
+            document.getElementsByClassName("webShown")[0].classList.remove("webShown");
+
+            document.getElementById("about").style.display="block";
+            document.getElementById("about").classList.add("webShown");
+        }
+
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </html>
