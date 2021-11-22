@@ -88,7 +88,7 @@
                 <input id="ilselles" type="text">
             </div>
         </div>
-        <h2 id="congrats" style="display:none;">Congratulations! You got it all correct 🎉🎉🎉</h2>
+        <h2 id="congrats" style="display:none; padding-top: 15px;">Congratulations! You got it all correct 🎉🎉🎉</h2>
     </div>
     <div id="conj-list" style="text-align: center; display: none;">
         <div>
@@ -157,7 +157,9 @@
             </div>
         </div>
     </div>
-    <div id="about"></div>
+    <div id="about" style="text-align: center; display: none;">
+        <div style="padding-top: 30px"></div><p>This website is designed to help learn different French verb conjugations in different tenses.<br>It is currently not equipped to handle l'imperatif but it will be updated shortly.<br><br>Created by Darius</p>
+    </div>
 
     <script>
         var webStarted = true;
@@ -165,6 +167,7 @@
         var tense = "indicatif-present";
         var inputs = ["je", "tu", "ilelleon", "nous", "vous", "ilselles"];
         var imperatifInputs = ["tu", "nous", "vous"];
+        var imperatifDisables = ["je", "ilelleon", "ilselles"];
         var apiResponse = {};
         var apiResponseLookup = {};
         var currentSplit = [];
@@ -188,8 +191,8 @@
         "conditionnel-present": {"je": "conditionnelPresentI", "tu": "conditionnelPresentYou", "ilelleon": "conditionnelPresentHeSheIt", "nous": "conditionnelPresentWe", "vous": "conditionnelPresentYouAll", "ilselles": "conditionnelPresentThey"},
         "conditionnel-passe1reForme": {"je": "conditionnelPasse1reFormeI", "tu": "conditionnelPasse1reFormeYou", "ilelleon": "conditionnelPasse1reFormeHeSheIt", "nous": "conditionnelPasse1reFormeWe", "vous": "conditionnelPasse1reFormeYouAll", "ilselles": "conditionnelPasse1reFormeThey"},
         "conditionnel-passe2eForme": {"je": "conditionnelPasse2eFormeI", "tu": "conditionnelPasse2eFormeYou", "ilelleon": "conditionnelPasse2eFormeHeSheIt", "nous": "conditionnelPasse2eFormeWe", "vous": "conditionnelPasse2eFormeYouAll", "ilselles": "conditionnelPasse2eFormeThey"},
-        "imperatif-present": {"je": "no", "tu": "imperatifPresentFirst", "ilelleon": "no", "nous": "imperatifPresentSecond", "vous": "imperatifPresentThird", "ilselles": "no"},
-        "imperatif-passe": {"je": "no", "tu": "imperatifPasseFirst", "ilelleon": "no", "nous": "imperatifPasseSecond", "vous": "imperatifPasseThird", "ilselles": "no"}}
+        "imperatif-present": {"je": "no", "tu": "imperatifPresentFirst", "ilelleon": "no", "nous": "imperatifPresentThird", "vous": "imperatifPresentSecond", "ilselles": "no"},
+        "imperatif-passe": {"je": "no", "tu": "imperatifPasseFirst", "ilelleon": "no", "nous": "imperatifPasseThird", "vous": "imperatifPasseSecond", "ilselles": "no"}}
 
         var lookupChanger;
 
@@ -231,15 +234,22 @@
                    document.getElementById(inputs[i]).style.color="black";
                    document.getElementById(inputs[i]).disabled=false;
                 }
-                if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense]["je"]].indexOf("'")!=-1) {
-                    document.getElementById("jeLabel").innerHTML="<strong>J'</strong>";
+                if (currentSplit[0]=="imperatif") {
+                    for (var k=0; k<3; k++) {
+                        document.getElementById(imperatifDisables[k]).disabled = true;
+                        document.getElementById(imperatifDisables[k]).style.color = "green";
+                    }
                 } else {
-                    document.getElementById("jeLabel").innerHTML="<strong>Je </strong>";
-                }
+                    if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense]["je"]].indexOf("'")!=-1) {
+                        document.getElementById("jeLabel").innerHTML="<strong>J'</strong>";
+                    } else {
+                        document.getElementById("jeLabel").innerHTML="<strong>Je </strong>";
+                    }
 
-                if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][inputs[i]]]=="-") {
-                    document.getElementById(inputs[i]).disabled=true;
-                    document.getElementById(inputs[i]).style.color="green";
+                    if (apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][inputs[i]]]=="-") {
+                        document.getElementById(inputs[i]).disabled=true;
+                        document.getElementById(inputs[i]).style.color="green";
+                    }
                 }
             }
         }
@@ -272,7 +282,12 @@
                 if (splitter == "'") {
                     checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]).split(splitter))[1];
                 } else {
-                    checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]).split(splitter))[1].slice(1);
+                    if (currentSplit[0]!="imperatif") {
+                        checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]).split(splitter))[1].slice(1);
+                    } else {
+                        checker = ((apiResponse["data"][currentSplit[0]][currentSplit[1]][verbDic[tense][currentFocus]]));
+                    }
+                    
                 }
 
 
@@ -282,18 +297,28 @@
                     document.getElementById(currentFocus).style.color = "green";
                 }
 
-                if (currentFocus == "je") {
+                if (tense.indexOf('imperatif')!=-1) {
+                    if (currentFocus == "tu") {
+                        document.getElementById("nous").focus();
+                    } else if (currentFocus == "nous") {
+                        document.getElementById("vous").focus();
+                    } else if (currentFocus == "vous") {
+                        document.getElementById("tu").focus();
+                    }
+                } else {
+                    if (currentFocus == "je") {
                     document.getElementById("tu").focus();
-                } else if (currentFocus == "tu") {
-                    document.getElementById("ilelleon").focus();
-                } else if (currentFocus == "ilelleon") {
-                    document.getElementById("nous").focus();
-                } else if (currentFocus == "nous") {
-                    document.getElementById("vous").focus();
-                } else if (currentFocus == "vous") {
-                    document.getElementById("ilselles").focus();
-                } else if (currentFocus == "ilselles") {
-                    document.getElementById("je").focus();
+                    } else if (currentFocus == "tu") {
+                        document.getElementById("ilelleon").focus();
+                    } else if (currentFocus == "ilelleon") {
+                        document.getElementById("nous").focus();
+                    } else if (currentFocus == "nous") {
+                        document.getElementById("vous").focus();
+                    } else if (currentFocus == "vous") {
+                        document.getElementById("ilselles").focus();
+                    } else if (currentFocus == "ilselles") {
+                        document.getElementById("je").focus();
+                    }
                 }
                 
                 complete = false;
